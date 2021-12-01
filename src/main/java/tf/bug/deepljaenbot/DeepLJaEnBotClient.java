@@ -55,7 +55,7 @@ public class DeepLJaEnBotClient {
         Matcher contentMatch = JA_PATTERN.matcher(content);
 
         if(contentMatch.find()) {
-            return mce.getMessage().addReaction(ReactionEmoji.unicode(WHITE_QUESTION_MARK_ORNAMENT));
+            return mce.getMessage().addReaction(ReactionEmoji.unicode(WHITE_QUESTION_MARK_ORNAMENT)).retry(4);
         } else {
             return Mono.empty();
         }
@@ -69,7 +69,7 @@ public class DeepLJaEnBotClient {
             if (unicodeReactOpt.isPresent()) {
                 ReactionEmoji.Unicode unicodeReact = unicodeReactOpt.get();
                 if (WHITE_QUESTION_MARK_ORNAMENT.equals(unicodeReact.getRaw())) {
-                    return rae.getMessage().flatMap(message -> {
+                    return rae.getMessage().retry(4).flatMap(message -> {
                         String content = message.getContent();
                         return this.deeplClient.request(content).flatMap(deepLResponse -> {
                             String english = deepLResponse.getTranslations().get(0).getText();
@@ -81,7 +81,13 @@ public class DeepLJaEnBotClient {
                                         .allowedMentions(AllowedMentions.builder().repliedUser(false).build())
                                         .build();
 
-                                return messageChannel.createMessage(mcs);
+                                return messageChannel.createMessage(mcs).onErrorResume(e -> {
+                                    MessageCreateSpec ecs = MessageCreateSpec.builder()
+                                            .content(e.getMessage())
+                                            .build();
+
+                                    return messageChannel.createMessage(ecs);
+                                });
                             });
                         });
                     });
