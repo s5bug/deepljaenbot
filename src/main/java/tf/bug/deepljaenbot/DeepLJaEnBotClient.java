@@ -77,7 +77,10 @@ public class DeepLJaEnBotClient {
                             return message.getChannel().flatMap(messageChannel -> {
                                 MessageCreateSpec mcs = MessageCreateSpec.builder()
                                         .content(english)
-                                        .messageReference(message.getId())
+                                        .messageReference(MessageReferenceData.builder()
+                                                .messageId(message.getId().asLong())
+                                                .channelId(message.getChannelId().asLong())
+                                                .build())
                                         .allowedMentions(AllowedMentions.builder().repliedUser(false).build())
                                         .build();
 
