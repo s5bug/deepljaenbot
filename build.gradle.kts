@@ -11,12 +11,12 @@ repositories {
 }
 
 dependencies {
-    implementation("com.discord4j:discord4j-core:3.2.8")
+    implementation("com.discord4j:discord4j-core:3.3.2")
 
-    implementation("org.slf4j:slf4j-simple:2.0.17")
+    implementation("org.slf4j:slf4j-simple:2.0.18")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation(platform("org.junit:junit-bom:6.0.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 tasks.withType<Jar> {

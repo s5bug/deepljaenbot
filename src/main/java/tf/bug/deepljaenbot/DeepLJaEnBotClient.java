@@ -4,11 +4,9 @@ import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.core.spec.MessageCreateMono;
+import discord4j.core.object.emoji.Emoji;
+import discord4j.core.object.emoji.UnicodeEmoji;
 import discord4j.core.spec.MessageCreateSpec;
-import discord4j.discordjson.json.MessageData;
 import discord4j.discordjson.json.MessageReferenceData;
 import discord4j.rest.util.AllowedMentions;
 import org.reactivestreams.Publisher;
@@ -55,7 +53,7 @@ public class DeepLJaEnBotClient {
         Matcher contentMatch = JA_PATTERN.matcher(content);
 
         if(contentMatch.find()) {
-            return mce.getMessage().addReaction(ReactionEmoji.unicode(WHITE_QUESTION_MARK_ORNAMENT)).retry(4);
+            return mce.getMessage().addReaction(Emoji.unicode(WHITE_QUESTION_MARK_ORNAMENT)).retry(4);
         } else {
             return Mono.empty();
         }
@@ -65,9 +63,9 @@ public class DeepLJaEnBotClient {
         if(rae.getUserId().equals(this.gdc.getSelfId())) {
             return Mono.empty();
         } else {
-            Optional<ReactionEmoji.Unicode> unicodeReactOpt = rae.getEmoji().asUnicodeEmoji();
+            Optional<UnicodeEmoji> unicodeReactOpt = rae.getEmoji().asUnicodeEmoji();
             if (unicodeReactOpt.isPresent()) {
-                ReactionEmoji.Unicode unicodeReact = unicodeReactOpt.get();
+                UnicodeEmoji unicodeReact = unicodeReactOpt.get();
                 if (WHITE_QUESTION_MARK_ORNAMENT.equals(unicodeReact.getRaw())) {
                     return rae.getMessage().retry(4).flatMap(message -> {
                         String content = message.getContent();
