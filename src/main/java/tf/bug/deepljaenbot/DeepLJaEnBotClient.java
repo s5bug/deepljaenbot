@@ -8,6 +8,8 @@ import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.emoji.UnicodeEmoji;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.MessageReferenceData;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.util.AllowedMentions;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
@@ -23,7 +25,11 @@ public class DeepLJaEnBotClient {
     private final DeepLClient deeplClient;
 
     public static Mono<DeepLJaEnBotClient> create(String token, String deeplToken) {
-        return DiscordClient.create(token).login().map(gdc -> new DeepLJaEnBotClient(gdc, deeplToken));
+        return DiscordClient.create(token)
+                .gateway()
+                .setEnabledIntents(IntentSet.nonPrivileged().or(IntentSet.of(Intent.MESSAGE_CONTENT)))
+                .login()
+                .map(gdc -> new DeepLJaEnBotClient(gdc, deeplToken));
     }
 
     public DeepLJaEnBotClient(GatewayDiscordClient gdc, String deeplToken) {

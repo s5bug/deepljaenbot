@@ -1,7 +1,9 @@
 package tf.bug.deepljaenbot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import java.util.List;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
@@ -21,19 +23,22 @@ public class DeepLClient {
     }
 
     public Mono<DeepLResponse> request(String ja) {
-        return this.httpClient
-                .post()
-                .uri("https://api-free.deepl.com/v2/translate")
-                .sendForm((req, form) -> {
-                    form.attr("auth_key", this.deeplToken);
-                    form.attr("text", ja);
-                    form.attr("source_lang", "JA");
-                    form.attr("target_lang", "EN-US");
-                })
-                .responseContent()
-                .aggregate()
-                .asString(StandardCharsets.UTF_8)
-                .flatMap(s -> Mono.fromCallable(() -> this.objectMapper.readValue(s, DeepLResponse.class)).subscribeOn(Schedulers.boundedElastic()));
+        DeepLRequest pojo = new DeepLRequest();
+        pojo.setText(List.of(ja));
+        pojo.setSourceLang("JA");
+        pojo.setTargetLang("EN-US");
+
+        return Mono.fromCallable(() -> this.objectMapper.writeValueAsBytes(pojo))
+                .flatMap(jsonBytes -> this.httpClient
+                        .headers(h -> h.set("Authorization", "DeepL-Auth-Key " + this.deeplToken)
+                                .set("Content-Type", "application/json"))
+                        .post()
+                        .uri("https://api-free.deepl.com/v2/translate")
+                        .send((req, outbound) -> outbound.sendByteArray(Mono.just(jsonBytes)))
+                        .responseSingle((response, byteBufMono) -> byteBufMono.asByteArray())
+                )
+                .flatMap(bytes -> Mono.fromCallable(() -> this.objectMapper.readValue(bytes, DeepLResponse.class)))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
 }
