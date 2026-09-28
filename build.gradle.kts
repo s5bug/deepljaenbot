@@ -13,7 +13,7 @@ repositories {
 dependencies {
     implementation("com.discord4j:discord4j-core:3.3.3")
 
-    implementation("org.slf4j:slf4j-simple:2.0.19")
+    implementation("org.slf4j:slf4j-simple:2.0.20")
 
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
